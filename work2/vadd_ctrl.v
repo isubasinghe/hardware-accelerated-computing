@@ -1,38 +1,40 @@
-module vadd_ctrl(clk, start, addr, enw, wea, enr, i);
-  input clk;
-  input start;
-  output reg [9:0] addr = 0;
-  output reg enw = 0;
-  output reg wea = 0;
-  output reg enr = 0;
-  output reg [9:0] i = 0;
+module vadd_ctrl(clk, start, addrsw, addrsr, ena, wea, enr);
+  input clk, start;
+  output wire [9:0] addrsw, addrsr; 
+  output wire ena, wea, enr;
 
-  always @(posedge clk) begin
-    i <= i + 1;
+  reg [9:0] i = 0;
+  always @(posedge clk) begin 
+    if (start)
+      i <= i + 1;
   end
+
+  assign addrsw = i - 1;
+  assign addrsr = i; 
+  assign ena = start && i > 0 && i < 101;
+  assign wea = start && i > 0 && i < 101;
+  assign enr = start && i < 100;
+
 endmodule
 
 
 module tb_vadd_ctrl();
   reg clk = 0;
   reg start = 0;
-  wire [9:0] addr = 0;
-  wire ena = 0;
-  wire wea = 0;
-  wire enr = 0;
-  wire [9:0] i = 0;
+  wire [9:0] addrsw;
+  wire [9:0] addrsr; 
+  wire ena, wea, enr;
 
-  vadd_ctrl ctrl(clk, start, addr, ena, wea, enr, i);
+  vadd_ctrl ctrl(clk, start, addrsw, addrsr, ena, wea, enr);
   always #5 clk = ~clk;
 
-  initial begin
-    $monitor($time,, "clk=%0b start=%0b addr=%0d ena=%0d wea=%0b enr=%0b i=%0d", clk, start, addr, ena, wea, enr, i);
-    #20
-    #20
+  initial begin 
+    $monitor($time,, "clk=%0b addrsw=%0d addrsr=%0d ena=%0b wea=%0b enr=%0b", clk, addrsw, addrsr, ena, wea, enr);
+    #20;
+    #20;
+    start=1;
+    #20;
     $finish;
-
   end
 endmodule
-
-
 
